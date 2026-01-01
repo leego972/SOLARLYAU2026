@@ -26,9 +26,10 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       external: [
-        "@stripe/stripe-js",
-        "stripe",
-      ],
+  "@stripe/stripe-js",
+  "@stripe/react-stripe-js",
+  "stripe",
+],
       output: {
         globals: {
           "@stripe/stripe-js": "Stripe",
