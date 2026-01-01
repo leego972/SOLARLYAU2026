@@ -5,7 +5,7 @@
  * and reliability improvements for the autonomous system.
  */
 
-import { getDb } from "./db";
+import { getDb } from './db';
 import { leads, installers, leadOffers } from "../drizzle/schema";
 import { and, eq, gte, lte, sql } from "drizzle-orm";
 

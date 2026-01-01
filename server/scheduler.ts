@@ -5,13 +5,12 @@
  */
 
 import * as leadMatcher from "./leadMatcher";
-import * as db from "./db";
+import * as db from './db';
 import { runAutonomousLeadGeneration, optimizePricing } from "./aiAgent";
 import { runRevenueMaximization } from "./revenueMaximizer";
 import { optimizeAllCampaigns } from "./adOptimizer";
 import { runDailyPerformanceCheck, sendWeeklyPerformanceSummary, generateMonthEndReport } from "./adScheduler";
 import { isGoogleAdsConfigured } from "./googleAds";
-import { processPendingWelcomeEmails } from "./welcomeSequence";
 
 let isRunning = false;
 let intervalId: NodeJS.Timeout | null = null;
@@ -53,9 +52,6 @@ async function runLeadProcessing() {
     if (currentHour % 1 === 0) {
       await runRevenueMaximization();
     }
-
-    // 5.5. Process pending welcome emails (every hour)
-    await processPendingWelcomeEmails();
 
     // 6. Optimize Google Ads campaigns (every 6 hours)
     if (isGoogleAdsConfigured() && currentHour % 6 === 0) {

@@ -1,5 +1,5 @@
 import { invokeLLM } from "./_core/llm";
-import { getAllInstallers, getInstallerById } from "./db";
+import { getAllInstallers, getInstallerById } from './db';
 import { makeAICall } from "./voiceAI";
 import type { Installer } from "../drizzle/schema";
 

@@ -10,7 +10,6 @@ import { serveStatic, setupVite } from "./vite";
 import { startScheduler } from "../scheduler";
 import { initializeAutonomousOperation } from "../autonomousMaster";
 import { registerStripeWebhook } from "../webhooks";
-import { startRatingEmailScheduler } from "../ratingEmailScheduler";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -43,48 +42,6 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
-  
-  // Email tracking endpoints
-  app.get("/api/track/email-open", async (req, res) => {
-    const token = req.query.token as string;
-    if (token) {
-      try {
-        const { getDb } = await import("../db");
-        const { ratingTokens } = await import("../../drizzle/schema");
-        const { eq } = await import("drizzle-orm");
-        const db = await getDb();
-        if (db) {
-          await db.update(ratingTokens).set({ emailOpenedAt: new Date() }).where(eq(ratingTokens.token, token));
-        }
-      } catch (e) {
-        console.error("[EmailTracking] Open tracking error:", e);
-      }
-    }
-    // Return 1x1 transparent GIF
-    const pixel = Buffer.from("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", "base64");
-    res.writeHead(200, { "Content-Type": "image/gif", "Content-Length": pixel.length, "Cache-Control": "no-store" });
-    res.end(pixel);
-  });
-  
-  app.get("/api/track/email-click", async (req, res) => {
-    const token = req.query.token as string;
-    const redirect = req.query.redirect as string;
-    if (token) {
-      try {
-        const { getDb } = await import("../db");
-        const { ratingTokens } = await import("../../drizzle/schema");
-        const { eq } = await import("drizzle-orm");
-        const db = await getDb();
-        if (db) {
-          await db.update(ratingTokens).set({ emailClickedAt: new Date() }).where(eq(ratingTokens.token, token));
-        }
-      } catch (e) {
-        console.error("[EmailTracking] Click tracking error:", e);
-      }
-    }
-    // Redirect to the actual URL
-    res.redirect(redirect || "/");
-  });
   // tRPC API
   app.use(
     "/api/trpc",
@@ -116,10 +73,6 @@ async function startServer() {
     // Initialize 100% autonomous operation (lead generation, installer recruitment, quality control, strategic optimization)
     initializeAutonomousOperation();
     console.log('[Autonomous] All autonomous systems initialized and running');
-    
-    // Start rating email scheduler (sends rating requests 10 days after installation)
-    startRatingEmailScheduler();
-    console.log('[RatingScheduler] Rating email scheduler initialized');
   });
 }
 

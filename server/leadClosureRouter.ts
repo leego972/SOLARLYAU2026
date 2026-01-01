@@ -9,7 +9,7 @@ import {
   getInstallerLeaderboard,
   markBonusPaid,
 } from "./dbLeadClosures";
-import { getLeadById, getTransactionById } from "./db";
+import { getLeadById, getTransactionById } from './db';
 
 export const leadClosureRouter = router({
   /**

@@ -1,18 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { sendEmail } from "./emailService";
+import { sendEmailWithGuide } from "./emailService";
 
 describe("SendGrid Email Integration", () => {
-  it("should have valid SendGrid API key and send test email", async () => {
+  it("should send email with PDF guide successfully", async () => {
     const testEmail = "test@example.com";
-    
-    // Test sending a simple email
-    const result = await sendEmail({
-      to: testEmail,
-      subject: "SendGrid API Test",
-      html: "<p>This is a test email to validate SendGrid configuration.</p>",
-    });
+    const testName = "Test User";
 
-    // Verify the result
-    expect(result).toBe(true);
+    // This will test the actual SendGrid integration
+    const result = await sendEmailWithGuide(testEmail, testName);
+
+    // Verify the result structure
+    expect(result).toBeDefined();
+    expect(result.success).toBe(true);
   }, 30000); // 30 second timeout for email sending
 });

@@ -156,7 +156,7 @@ Is this a qualified solar lead for ${state}? Return JSON:
       },
     });
 
-    const content = analysis.choices?.[0]?.message?.content;
+    const content = analysis.choices[0]?.message?.content;
     let qualification;
     try {
       qualification = JSON.parse(
@@ -263,7 +263,7 @@ Return JSON with: name, phone, email, address, suburb, postcode`,
     },
   });
 
-  const content = response.choices?.[0]?.message?.content;
+  const content = response.choices[0]?.message?.content;
   try {
     return JSON.parse(typeof content === "string" ? content : "{}");
   } catch (error) {
@@ -409,7 +409,7 @@ Return JSON array of leads with these fields:
       },
     });
 
-    const content = response.choices?.[0]?.message?.content;
+    const content = response.choices[0]?.message?.content;
     let result;
     try {
       result = JSON.parse(typeof content === "string" ? content : "{}");

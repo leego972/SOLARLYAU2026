@@ -1,5 +1,5 @@
 import { invokeLLM } from "./_core/llm";
-import { getLeadById, updateLead, getInstallerById, updateInstaller } from "./db";
+import { getLeadById, updateLead, getInstallerById, updateInstaller } from './db';
 import type { Lead, Installer } from "../drizzle/schema";
 
 /**

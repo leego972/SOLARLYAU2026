@@ -1,26 +1,12 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
-import { trackLeadConversion } from "./googleAdsConversions";
 import { systemRouter } from "./_core/systemRouter";
 import { videoTestimonialRouter } from "./videoTestimonialRouter";
 import { googleAdsRouter } from "./googleAdsRouter";
 import { leadClosureRouter } from "./leadClosureRouter";
-import { launchCampaignRouter } from "./launchCampaignRouter";
-import { analyticsRouter } from "./analyticsRouter";
-import { vibaRouter } from "./vibaIntegration";
-import { linkedinCampaignRouter } from './linkedinCampaignRouter';
-import { emailCampaignRouter } from './emailCampaignRouter';
-import { trackingRouter } from './trackingRouter';
-import { smsVerificationRouter } from './smsVerificationRouter';
-import { ratingsRouter } from './ratingsRouter';
-import { blogRouter } from './blogRouter';
-import { testimonialsRouter } from './testimonialsRouter';
-import { leadTrackingRouter } from './leadTrackingRouter';
-import { installerMetricsRouter } from './installerMetricsRouter';
-import { scheduleWelcomeSequence } from "./welcomeSequence";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import * as db from "./db";
+import * as db from './db';
 import { TRPCError } from "@trpc/server";
 
 // ============ VALIDATION SCHEMAS ============
@@ -100,8 +86,6 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 export const appRouter = router({
   system: systemRouter,
-  tracking: trackingRouter,
-  installerMetrics: installerMetricsRouter,
 
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
@@ -116,31 +100,6 @@ export const appRouter = router({
 
   // ============ INSTALLER ROUTES ============
   installers: router({
-    // Public signup endpoint with auto-verification
-    signup: publicProcedure.input(createInstallerSchema).mutation(async ({ input }) => {
-      // Auto-verify installers with valid ABN or set as active by default
-      const installerData = {
-        ...input,
-        isActive: true,
-        isVerified: input.abn ? true : false, // Auto-verify if ABN provided
-      };
-      const newInstaller = await db.createInstaller(installerData);
-
-      // Schedule welcome email sequence
-      try {
-        await scheduleWelcomeSequence(
-          newInstaller.id,
-          input.email,
-          input.contactName,
-          input.companyName
-        );
-      } catch (error) {
-        console.error('[Installer Signup] Failed to schedule welcome sequence:', error);
-      }
-
-      return newInstaller;
-    }),
-
     create: adminProcedure.input(createInstallerSchema).mutation(async ({ input }) => {
       return await db.createInstaller(input);
     }),
@@ -205,7 +164,7 @@ export const appRouter = router({
       return lead;
     }),
 
-    getByStatus: publicProcedure
+    getByStatus: adminProcedure
       .input(
         z.object({
           status: z.enum(["new", "offered", "accepted", "sold", "expired", "invalid"]),
@@ -355,14 +314,6 @@ export const appRouter = router({
         });
 
         console.log(`[QuoteRequest] New real lead created: ID ${lead.id} from ${input.suburb}, ${input.state}`);
-
-        // Track conversion in Google Ads (async, don't block response)
-        trackLeadConversion({
-          id: lead.id,
-          customerEmail: lead.customerEmail,
-          customerPhone: lead.customerPhone,
-          price: lead.basePrice,
-        }).catch(err => console.error('[QuoteRequest] Conversion tracking error:', err));
 
         return { success: true, leadId: lead.id };
       }),
@@ -573,85 +524,6 @@ export const appRouter = router({
     }),
   }),
 
-  // ============ MARKETPLACE SEEDING (Admin) ============
-  marketplace: router({
-    seedLeads: adminProcedure
-      .input(z.object({
-        count: z.number().int().min(1).max(100).default(20),
-      }))
-      .mutation(async ({ input }) => {
-        const { seedMarketplaceLeads } = await import("./seedMarketplaceLeads");
-        return await seedMarketplaceLeads({ count: input.count });
-      }),
-  }),
-
-  // ============ INSTALLER PAYMENT ROUTES (for direct lead purchases) ============
-  installerPayments: router({
-    createPaymentIntent: protectedProcedure
-      .input(z.object({
-        leadId: z.number().int(),
-        amount: z.number().int().min(1),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const Stripe = (await import("stripe")).default;
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
-        
-        // Get lead to verify it exists and is available
-        const lead = await db.getLeadById(input.leadId);
-        if (!lead) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Lead not found" });
-        }
-        if (lead.status !== "new" && lead.status !== "offered") {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Lead is no longer available" });
-        }
-        
-        // Create payment intent
-        const paymentIntent = await stripe.paymentIntents.create({
-          amount: input.amount * 100, // Convert to cents
-          currency: "aud",
-          metadata: {
-            lead_id: input.leadId.toString(),
-            user_id: ctx.user.id.toString(),
-            user_email: ctx.user.email || "",
-          },
-        });
-        
-        return { clientSecret: paymentIntent.client_secret! };
-      }),
-    
-    confirmPurchase: protectedProcedure
-      .input(z.object({
-        leadId: z.number().int(),
-        paymentIntentId: z.string(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const Stripe = (await import("stripe")).default;
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
-        
-        // Verify payment succeeded
-        const paymentIntent = await stripe.paymentIntents.retrieve(input.paymentIntentId);
-        if (paymentIntent.status !== "succeeded") {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Payment not completed" });
-        }
-        
-        // Update lead status
-        await db.updateLead(input.leadId, { status: "sold" });
-        
-        // Create transaction record
-        await db.createTransaction({
-          leadId: input.leadId,
-          installerId: 0, // Direct purchase, no installer
-          leadOfferId: 0, // Direct purchase, no offer
-          amount: paymentIntent.amount / 100,
-          currency: "AUD",
-          stripePaymentIntentId: input.paymentIntentId,
-          status: "succeeded",
-        });
-        
-        return { success: true };
-      }),
-  }),
-
   // ============ PAYMENT ROUTES ============
   payments: router({
     createPaymentIntent: adminProcedure
@@ -785,35 +657,5 @@ export const appRouter = router({
 
   // ============ LEAD CLOSURE ROUTES ============
   leadClosures: leadClosureRouter,
-
-  // ============ LAUNCH CAMPAIGN ROUTES ============
-  launchCampaign: launchCampaignRouter,
-
-  // ============ INSTALLER ANALYTICS ROUTES ============
-  installerAnalytics: analyticsRouter,
-
-  // ============ VIBA BUSINESS MANAGER INTEGRATION ============
-  viba: vibaRouter,
-
-  // ============ LINKEDIN CAMPAIGN ROUTES ============
-  linkedinCampaign: linkedinCampaignRouter,
-
-  // ============ EMAIL CAMPAIGN ROUTES ============
-  emailCampaign: emailCampaignRouter,
-
-  // ============ SMS VERIFICATION ROUTES ============
-  smsVerification: smsVerificationRouter,
-
-  // ============ RATINGS ROUTES ============
-  ratings: ratingsRouter,
-
-  // ============ BLOG ROUTES ============
-  blog: blogRouter,
-
-  // ============ TESTIMONIALS ROUTES ============
-  testimonials: testimonialsRouter,
-
-  // ============ LEAD TRACKING ROUTES ============
-  leadTracking: leadTrackingRouter,
 });
 export type AppRouter = typeof appRouter;

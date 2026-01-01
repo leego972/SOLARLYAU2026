@@ -3,7 +3,7 @@
  * Implements all 12 strategies autonomously
  */
 
-import { getDb } from "./db";
+import { getDb } from './db';
 import { leads, transactions, installers, bundlePurchases, auctionBids, referrals, leadClosures } from "../drizzle/schema";
 import { eq, and, lt, gte, sql } from "drizzle-orm";
 

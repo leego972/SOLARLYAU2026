@@ -5,15 +5,21 @@
  */
 
 import Stripe from "stripe";
-import * as db from "./db";
+import * as db from './db';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is required");
+let stripe: Stripe | null = null;
+
+function getStripeClient(): Stripe {
+  if (!stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error("STRIPE_SECRET_KEY is required for Stripe operations");
+    }
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-11-17.clover",
+    });
+  }
+  return stripe;
 }
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-11-17.clover",
-});
 
 /**
  * Create or retrieve Stripe customer for installer
@@ -30,7 +36,7 @@ export async function getOrCreateStripeCustomer(installerId: number): Promise<st
   }
 
   // Create new Stripe customer
-  const customer = await stripe.customers.create({
+  const customer = await getStripeClient().customers.create({
     email: installer.email,
     name: installer.companyName,
     metadata: {
@@ -73,7 +79,7 @@ export async function createLeadPaymentIntent(
   const customerId = await getOrCreateStripeCustomer(installerId);
 
   // Create payment intent (amount in cents)
-  const paymentIntent = await stripe.paymentIntents.create({
+  const paymentIntent = await getStripeClient().paymentIntents.create({
     amount: offer.offerPrice * 100, // Convert AUD to cents
     currency: "aud",
     customer: customerId,
@@ -128,7 +134,7 @@ export async function createLeadInvoice(
   const customerId = await getOrCreateStripeCustomer(installerId);
 
   // Create invoice item
-  const invoiceItem = await stripe.invoiceItems.create({
+  const invoiceItem = await getStripeClient().invoiceItems.create({
     customer: customerId,
     amount: offer.offerPrice * 100,
     currency: "aud",
@@ -136,7 +142,7 @@ export async function createLeadInvoice(
   });
 
   // Create invoice
-  const invoice = await stripe.invoices.create({
+  const invoice = await getStripeClient().invoices.create({
     customer: customerId,
     auto_advance: true, // Automatically finalize and attempt payment
     collection_method: "send_invoice",
@@ -149,7 +155,7 @@ export async function createLeadInvoice(
   });
 
   // Finalize invoice
-  const finalizedInvoice = await stripe.invoices.finalizeInvoice(invoice.id);
+  const finalizedInvoice = await getStripeClient().invoices.finalizeInvoice(invoice.id);
 
   // Create transaction record
   await db.createTransaction({
@@ -252,7 +258,7 @@ export async function refundTransaction(transactionId: number): Promise<void> {
   }
 
   // Create refund
-  const refund = await stripe.refunds.create({
+  const refund = await getStripeClient().refunds.create({
     payment_intent: transaction.stripePaymentIntentId || undefined,
     charge: transaction.stripeChargeId || undefined,
   });

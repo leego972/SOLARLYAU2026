@@ -4,8 +4,6 @@
  */
 
 import { getGoogleAdsCustomer, isGoogleAdsConfigured } from './googleAds';
-import { getClientAccountCustomer } from './googleAdsClientAccounts';
-import { systemConfig } from '../drizzle/schema';
 import { invokeLLM } from './_core/llm';
 import { getDb } from './db';
 import { adBudgets, adCampaigns, adPerformance } from '../drizzle/schema';
@@ -152,31 +150,9 @@ export async function createSolarCampaign(monthlyBudget: number): Promise<boolea
     return false;
   }
 
-  // Get selected client account ID from database
-  const db = await getDb();
-  if (!db) {
-    console.error('[AdManager] Database not available');
-    return false;
-  }
-
-  const configResult = await db
-    .select()
-    .from(systemConfig)
-    .where(eq(systemConfig.key, 'google_ads_client_account_id'))
-    .limit(1);
-
-  const clientAccountId = configResult[0]?.value;
-  if (!clientAccountId) {
-    console.error('[AdManager] No client account selected. Please select a client account in the dashboard.');
-    return false;
-  }
-
-  console.log(`[AdManager] Using client account: ${clientAccountId}`);
-
-  // Get customer instance for the selected client account
-  const customer = getClientAccountCustomer(clientAccountId);
+  const customer = getGoogleAdsCustomer();
   if (!customer) {
-    console.error('[AdManager] Failed to get client account customer');
+    console.error('[AdManager] Failed to get Google Ads customer');
     return false;
   }
 
@@ -187,14 +163,11 @@ export async function createSolarCampaign(monthlyBudget: number): Promise<boolea
     const adCopy = await generateAdCopy();
 
     // Calculate daily budget (monthly / 30)
-    // Round to nearest 10,000 micros ($0.01 AUD) - Google Ads requires amounts to be multiples of minimum currency unit
-    const rawDailyBudgetMicros = Math.floor((monthlyBudget / 30) * 1_000_000);
-    const dailyBudgetMicros = Math.round(rawDailyBudgetMicros / 10000) * 10000;
+    const dailyBudgetMicros = Math.floor((monthlyBudget / 30) * 1_000_000);
 
-    // Create campaign with unique timestamp to avoid duplicate name errors
-    const timestamp = Date.now();
+    // Create campaign
     const today = new Date().toISOString().split('T')[0];
-    const campaignName = `Solar Leads - ${today} - ${timestamp}`;
+    const campaignName = `Solar Leads - ${today}`;
     
     // Get the deployed domain for final URL
     const finalUrl = `https://solar-lead-vwkzbmwb.manus.space/get-quote`;
@@ -207,7 +180,6 @@ export async function createSolarCampaign(monthlyBudget: number): Promise<boolea
       keywords: SOLAR_CAMPAIGN_CONFIG.keywords,
       adCopy,
       finalUrl,
-      clientAccountId, // Pass the selected client account for manager accounts
     });
     
     if (!result.success) {

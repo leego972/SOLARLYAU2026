@@ -10,8 +10,8 @@
 
 import { invokeLLM } from "./_core/llm";
 import { callDataApi } from "./_core/dataApi";
-import * as db from "./db";
-import { createLead } from "./db";
+import * as db from './db';
+import { createLead } from './db';
 import { generateEnrichedLeads } from "./leadEnrichment";
 
 interface LeadGenerationResult {

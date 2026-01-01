@@ -2,8 +2,7 @@
  * WhatsApp Business API Integration
  * 
  * Enables automated WhatsApp messaging for installer recruitment and lead notifications.
- * Note: ClickSend doesn't support WhatsApp directly, so this module simulates WhatsApp
- * and falls back to SMS via ClickSend when WhatsApp is not available.
+ * Uses Twilio's WhatsApp Business API for reliable message delivery.
  */
 
 import { ENV } from "./_core/env";
@@ -20,77 +19,40 @@ export interface WhatsAppMessageResult {
   messageSid?: string;
   error?: string;
   status?: 'sent' | 'delivered' | 'read' | 'failed';
-  channel?: 'whatsapp' | 'sms';
 }
 
 /**
- * Send SMS via ClickSend as fallback for WhatsApp
- */
-async function sendSMSViaClickSend(to: string, message: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  try {
-    const username = ENV.clicksendUsername;
-    const apiKey = ENV.clicksendApiKey;
-
-    if (!username || !apiKey) {
-      return { success: false, error: 'ClickSend not configured' };
-    }
-
-    const auth = Buffer.from(`${username}:${apiKey}`).toString('base64');
-
-    const response = await fetch('https://rest.clicksend.com/v3/sms/send', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messages: [
-          {
-            source: 'nodejs',
-            body: message,
-            to: to,
-          },
-        ],
-      }),
-    });
-
-    const result = await response.json();
-
-    if (result.response_code === 'SUCCESS') {
-      return { success: true, messageId: result.data?.messages?.[0]?.message_id };
-    } else {
-      return { success: false, error: result.response_msg || 'Failed to send SMS' };
-    }
-  } catch (error: any) {
-    return { success: false, error: error.message };
-  }
-}
-
-/**
- * Send a WhatsApp message (falls back to SMS via ClickSend)
+ * Send a WhatsApp message
  */
 export async function sendWhatsAppMessage(
   message: WhatsAppMessage
 ): Promise<WhatsAppMessageResult> {
   try {
-    // Try to send via SMS using ClickSend
-    if (ENV.clicksendUsername && ENV.clicksendApiKey) {
-      const smsResult = await sendSMSViaClickSend(message.to, message.message);
-      
-      if (smsResult.success) {
-        console.log(`[WhatsApp/SMS] Message sent to ${message.to}: ${smsResult.messageId}`);
-        return {
-          success: true,
-          messageSid: smsResult.messageId,
-          status: 'sent',
-          channel: 'sms',
-        };
-      }
+    // Check if Twilio WhatsApp is configured
+    if (!ENV.twilioAccountSid || !ENV.twilioAuthToken) {
+      console.log(`[WhatsApp] Twilio not configured - simulating message to ${message.to}`);
+      return simulateMessage(message);
     }
     
-    // Simulate if no SMS provider configured
-    console.log(`[WhatsApp] No provider configured - simulating message to ${message.to}`);
-    return simulateMessage(message);
+    // Send actual message using Twilio WhatsApp API
+    const twilio = require('twilio');
+    const client = twilio(ENV.twilioAccountSid, ENV.twilioAuthToken);
+    
+    const twilioMessage = await client.messages.create({
+      from: `whatsapp:${ENV.twilioPhoneNumber}`,
+      to: `whatsapp:${message.to}`,
+      body: message.message,
+      ...(message.mediaUrl && { mediaUrl: [message.mediaUrl] }),
+      statusCallback: `${ENV.baseUrl}/api/whatsapp/status-callback`,
+    });
+    
+    console.log(`[WhatsApp] Message sent to ${message.to}: ${twilioMessage.sid}`);
+    
+    return {
+      success: true,
+      messageSid: twilioMessage.sid,
+      status: 'sent',
+    };
     
   } catch (error) {
     console.error(`[WhatsApp] Error sending message to ${message.to}:`, error);
@@ -133,7 +95,7 @@ export async function sendBulkWhatsAppMessages(
 
 /**
  * Send WhatsApp message using approved template
- * (Falls back to regular SMS with template content)
+ * (Required for initial outreach to new contacts)
  */
 export async function sendWhatsAppTemplate(
   to: string,
@@ -141,13 +103,33 @@ export async function sendWhatsAppTemplate(
   parameters: Record<string, string>
 ): Promise<WhatsAppMessageResult> {
   try {
-    // Convert template to plain text message
-    let message = `[${templateName}] `;
-    Object.entries(parameters).forEach(([key, value]) => {
-      message += `${key}: ${value}. `;
+    if (!ENV.twilioAccountSid || !ENV.twilioAuthToken) {
+      console.log(`[WhatsApp] Twilio not configured - simulating template message to ${to}`);
+      return simulateMessage({ to, message: `Template: ${templateName}` });
+    }
+    
+    const twilio = require('twilio');
+    const client = twilio(ENV.twilioAccountSid, ENV.twilioAuthToken);
+    
+    // Format template parameters
+    const contentSid = `HX${templateName}`; // Twilio content SID format
+    const contentVariables = JSON.stringify(parameters);
+    
+    const message = await client.messages.create({
+      from: `whatsapp:${ENV.twilioPhoneNumber}`,
+      to: `whatsapp:${to}`,
+      contentSid,
+      contentVariables,
+      statusCallback: `${ENV.baseUrl}/api/whatsapp/status-callback`,
     });
     
-    return sendWhatsAppMessage({ to, message: message.trim() });
+    console.log(`[WhatsApp] Template message sent to ${to}: ${message.sid}`);
+    
+    return {
+      success: true,
+      messageSid: message.sid,
+      status: 'sent',
+    };
     
   } catch (error) {
     console.error(`[WhatsApp] Error sending template to ${to}:`, error);
@@ -160,7 +142,7 @@ export async function sendWhatsAppTemplate(
 }
 
 /**
- * Simulate message sending (for testing without providers)
+ * Simulate message sending (for testing without Twilio)
  */
 async function simulateMessage(message: WhatsAppMessage): Promise<WhatsAppMessageResult> {
   await delay(500);

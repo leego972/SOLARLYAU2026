@@ -11,7 +11,7 @@
  *                   + $99 × 30 active = $2,970/month = $35,640/year
  */
 
-import { getDb } from "./db";
+import { getDb } from './db';
 import { eq } from "drizzle-orm";
 // Training enrollments will be tracked in existing tables
 

@@ -3,7 +3,7 @@
  * Automatically processes refunds based on clear rules
  */
 
-import { getLeadOfferById, updateLeadOffer } from "./db";
+import { getLeadOfferById, updateLeadOffer } from './db';
 import { refundTransaction } from "./stripe";
 
 export interface RefundRequest {

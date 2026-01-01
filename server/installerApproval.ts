@@ -3,7 +3,7 @@
  * Verifies ABN, checks business legitimacy, auto-approves qualified installers
  */
 
-import { updateInstaller } from "./db";
+import { updateInstaller } from './db';
 
 export interface ABNLookupResult {
   abn: string;

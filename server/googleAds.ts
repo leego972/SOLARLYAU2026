@@ -6,17 +6,11 @@
 import { GoogleAdsApi, Customer } from 'google-ads-api';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-// Get __dirname equivalent in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Load credentials from .env.google-ads file
-const envPath = path.join(__dirname, '..', '.env.google-ads');
+const envPath = path.join(process.cwd(), '.env.google-ads');
 const credentials: Record<string, string> = {};
 
-console.log('[GoogleAds] Loading credentials from:', envPath);
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf-8');
   envContent.split('\n').forEach(line => {
@@ -25,9 +19,6 @@ if (fs.existsSync(envPath)) {
       credentials[key.trim()] = value.trim();
     }
   });
-  console.log('[GoogleAds] Loaded credentials:', Object.keys(credentials));
-} else {
-  console.warn('[GoogleAds] Credentials file not found at:', envPath);
 }
 
 // Google Ads credentials
@@ -70,23 +61,6 @@ export function initializeGoogleAdsClient(): GoogleAdsApi | null {
 }
 
 /**
- * Get Google Ads client and config (for creating custom customer instances)
- */
-export function getGoogleAdsClient() {
-  const client = initializeGoogleAdsClient();
-  return {
-    client,
-    config: {
-      customer_id: GOOGLE_ADS_CUSTOMER_ID,
-      refresh_token: GOOGLE_ADS_REFRESH_TOKEN,
-      client_id: GOOGLE_ADS_CONFIG.client_id,
-      client_secret: GOOGLE_ADS_CONFIG.client_secret,
-      developer_token: GOOGLE_ADS_CONFIG.developer_token,
-    },
-  };
-}
-
-/**
  * Get Google Ads customer instance
  */
 export function getGoogleAdsCustomer(): Customer | null {
@@ -125,35 +99,6 @@ export function isGoogleAdsConfigured(): boolean {
     GOOGLE_ADS_REFRESH_TOKEN &&
     GOOGLE_ADS_CUSTOMER_ID
   );
-}
-
-/**
- * Get Google Ads customer instance for a specific client account
- * Used when working with manager accounts (MCC)
- */
-export function getGoogleAdsCustomerForClient(clientAccountId: string): Customer | null {
-  if (!GOOGLE_ADS_REFRESH_TOKEN) {
-    console.warn('[GoogleAds] Missing GOOGLE_ADS_REFRESH_TOKEN');
-    return null;
-  }
-
-  const client = initializeGoogleAdsClient();
-  if (!client) return null;
-
-  try {
-    // For manager accounts, we need to specify login_customer_id (the manager account)
-    // and customer_id (the client account we want to operate on)
-    const clientCustomer = client.Customer({
-      customer_id: clientAccountId.replace(/-/g, ''),
-      refresh_token: GOOGLE_ADS_REFRESH_TOKEN,
-      login_customer_id: GOOGLE_ADS_CUSTOMER_ID.replace(/-/g, ''), // Manager account ID
-    });
-    console.log(`[GoogleAds] Client customer ${clientAccountId} initialized with manager ${GOOGLE_ADS_CUSTOMER_ID}`);
-    return clientCustomer;
-  } catch (error) {
-    console.error('[GoogleAds] Failed to initialize client customer:', error);
-    return null;
-  }
 }
 
 /**

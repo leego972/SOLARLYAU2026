@@ -8,9 +8,8 @@
  * - Service area coverage
  */
 
-import * as db from "./db";
+import * as db from './db';
 import { Lead, Installer } from "../drizzle/schema";
-import { notifyInstallerOfNewLead } from "./installerNotifications";
 
 interface MatchScore {
   installer: Installer;
@@ -226,16 +225,6 @@ export async function createOffersForLead(lead: Lead): Promise<number> {
     console.log(
       `[LeadMatcher] Created offer for installer ${match.installer.companyName} (score: ${match.score})`
     );
-
-    // Send notification to installer
-    const offer = (await db.getOffersByLeadId(lead.id)).find(
-      (o) => o.installerId === match.installer.id
-    );
-    if (offer) {
-      notifyInstallerOfNewLead(lead, match.installer, offer).catch((err) =>
-        console.error(`[LeadMatcher] Failed to notify installer ${match.installer.id}:`, err)
-      );
-    }
   }
 
   // Update lead status

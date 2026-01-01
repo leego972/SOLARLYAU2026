@@ -12,7 +12,7 @@
  *                   + 10% revenue share = $50,000-200,000/year
  */
 
-import { getDb } from "./db";
+import { getDb } from './db';
 
 export interface WhiteLabelClient {
   id: number;

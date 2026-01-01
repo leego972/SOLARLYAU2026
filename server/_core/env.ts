@@ -7,8 +7,8 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
-  // ClickSend credentials for SMS verification
-  clicksendUsername: process.env.CLICKSEND_USERNAME ?? "",
-  clicksendApiKey: process.env.CLICKSEND_API_KEY ?? "",
+  twilioAccountSid: process.env.TWILIO_ACCOUNT_SID ?? "",
+  twilioAuthToken: process.env.TWILIO_AUTH_TOKEN ?? "",
+  twilioPhoneNumber: process.env.TWILIO_PHONE_NUMBER ?? "",
   baseUrl: process.env.BASE_URL ?? "https://3000-idatkfiadpsetlvtwy7fs-a410c665.manus-asia.computer",
 };

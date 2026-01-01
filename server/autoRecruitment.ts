@@ -4,7 +4,7 @@
  */
 
 import { callDataApi } from "./_core/dataApi";
-import { createInstaller } from "./db";
+import { createInstaller } from './db';
 import { invokeLLM } from "./_core/llm";
 
 export interface RecruitmentTarget {
@@ -51,26 +51,20 @@ export async function findInstallersOnLinkedIn(
       });
       
       const typedResult = result as any;
-      if (typedResult.success && typedResult.data?.items && Array.isArray(typedResult.data.items)) {
+      if (typedResult.success && typedResult.data?.items) {
         for (const person of typedResult.data.items.slice(0, 5)) {
-          // Skip if person data is invalid
-          if (!person || typeof person !== 'object') continue;
-          
           // Extract company info
-          const companyName = person.currentCompany || person.headline?.split("at")?.[1]?.trim() || "Unknown Company";
+          const companyName = person.currentCompany || person.headline?.split("at")[1]?.trim() || "Unknown Company";
           
-          // Only add if we have minimum required data
-          if (companyName && companyName !== "Unknown Company") {
-            targets.push({
-              companyName,
-              contactName: person.fullName || "Unknown",
-              email: "", // Will be enriched later
-              linkedInUrl: person.profileURL || "",
-              state,
-              city: person.location?.split(",")?.[0] || state,
-              score: 70, // Base score for LinkedIn finds
-            });
-          }
+          targets.push({
+            companyName,
+            contactName: person.fullName || "Unknown",
+            email: "", // Will be enriched later
+            linkedInUrl: person.profileURL,
+            state,
+            city: person.location?.split(",")[0] || state,
+            score: 70, // Base score for LinkedIn finds
+          });
         }
       }
     } catch (error) {
@@ -124,8 +118,8 @@ Return ONLY a JSON object with this exact format:
       },
     });
 
-    const content = response.choices?.[0]?.message?.content;
-    if (content && typeof content === 'string') {
+    const content = response.choices[0]?.message?.content;
+    if (typeof content === 'string') {
       const contactInfo = JSON.parse(content);
       return {
         ...target,
@@ -240,20 +234,8 @@ export async function runRecruitmentCampaign(
   
   // Step 2: Enrich and contact each target
   for (const target of targets) {
-    // Skip targets without company name
-    if (!target.companyName || target.companyName === "Unknown Company") {
-      console.log(`[Recruitment] Skipping invalid target: ${JSON.stringify(target)}`);
-      continue;
-    }
-    
     // Enrich contact info
     const enrichedTarget = await enrichInstallerContact(target);
-    
-    // Skip if enrichment failed to get email
-    if (!enrichedTarget.email || enrichedTarget.email.includes("info@")) {
-      console.log(`[Recruitment] Skipping ${enrichedTarget.companyName} - no valid email found`);
-      continue;
-    }
     
     // Generate personalized email
     const emailContent = await generateOutreachEmail(enrichedTarget);
@@ -264,7 +246,7 @@ export async function runRecruitmentCampaign(
     if (sent) {
       contacted++;
       
-      // Create installer record with auto-verification
+      // Create installer record as "pending" (they'll register via signup link)
       try {
         await createInstaller({
           companyName: enrichedTarget.companyName,
@@ -274,16 +256,13 @@ export async function runRecruitmentCampaign(
           state: enrichedTarget.state,
           servicePostcodes: "", // Will be filled when they register
           abn: null,
-          isActive: true, // Auto-activate recruited installers
-          isVerified: true, // Auto-verify recruited installers (they came from LinkedIn)
+          isActive: false, // Not active until they complete registration
+          isVerified: false,
         });
         
         registered++;
-      } catch (error: any) {
-        // Ignore duplicate email errors (installer already exists)
-        if (!error?.message?.includes('Duplicate entry')) {
-          console.error(`[Recruitment] Error creating installer record for ${enrichedTarget.companyName}:`, error);
-        }
+      } catch (error) {
+        console.error(`[Recruitment] Error creating installer record for ${enrichedTarget.companyName}:`, error);
       }
     }
     

@@ -10,43 +10,6 @@ const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL || "support@solarlyau.com";
 const FROM_NAME = process.env.FROM_NAME || "SolarlyAU";
 
-export interface EmailOptions {
-  to: string;
-  subject: string;
-  html: string;
-  from?: { email: string; name: string };
-}
-
-/**
- * Generic email sending function
- */
-export async function sendEmail(options: EmailOptions): Promise<boolean> {
-  try {
-    if (!SENDGRID_API_KEY) {
-      console.log(`[EmailService] Would send email to ${options.to}`);
-      console.log(`[EmailService] Subject: ${options.subject}`);
-      return true;
-    }
-
-    const msg = {
-      to: options.to,
-      from: options.from || {
-        email: FROM_EMAIL,
-        name: FROM_NAME,
-      },
-      subject: options.subject,
-      html: options.html,
-    };
-
-    await sgMail.send(msg);
-    console.log(`[EmailService] Email sent to ${options.to}`);
-    return true;
-  } catch (error) {
-    console.error(`[EmailService] Failed to send email to ${options.to}:`, error);
-    return false;
-  }
-}
-
 if (SENDGRID_API_KEY) {
   sgMail.setApiKey(SENDGRID_API_KEY);
   console.log("[EmailService] SendGrid initialized");

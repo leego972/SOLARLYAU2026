@@ -3,9 +3,6 @@
  * 
  * Enables simultaneous calling to multiple installers instead of sequential calling.
  * Significantly increases recruitment efficiency by calling 5-10 installers at once.
- * 
- * Note: Voice calling requires a dedicated voice provider (not included in ClickSend SMS).
- * This module provides simulation for testing and can be extended with voice providers.
  */
 
 import { ENV } from "./_core/env";
@@ -85,8 +82,7 @@ export async function makeParallelCalls(
 }
 
 /**
- * Make a single call
- * Note: Voice calling is simulated. Extend with a voice provider for production use.
+ * Make a single call using Twilio
  */
 async function makeCall(
   recipient: CallRecipient,
@@ -94,10 +90,38 @@ async function makeCall(
   config: ParallelDialConfig
 ): Promise<CallResult> {
   try {
-    // Voice calling requires a dedicated provider
-    // For now, simulate calls for testing purposes
-    console.log(`[ParallelDialer] Voice provider not configured - simulating call to ${recipient.name}`);
-    return simulateCall(recipient);
+    // Check if Twilio is configured
+    if (!ENV.twilioAccountSid || !ENV.twilioAuthToken || !ENV.twilioPhoneNumber) {
+      console.log(`[ParallelDialer] Twilio not configured - simulating call to ${recipient.name}`);
+      return simulateCall(recipient);
+    }
+    
+    // Make actual call using Twilio
+    const twilio = require('twilio');
+    const client = twilio(ENV.twilioAccountSid, ENV.twilioAuthToken);
+    
+    const call = await client.calls.create({
+      to: recipient.phone,
+      from: ENV.twilioPhoneNumber,
+      twiml: generateTwiML(script, recipient),
+      timeout: config.callTimeout,
+      record: true,
+      recordingStatusCallback: `${ENV.baseUrl}/api/twilio/recording-callback`,
+      statusCallback: `${ENV.baseUrl}/api/twilio/call-status`,
+      statusCallbackEvent: ['completed'],
+    });
+    
+    console.log(`[ParallelDialer] Call initiated to ${recipient.name} (${recipient.phone}): ${call.sid}`);
+    
+    // Wait for call to complete (with timeout)
+    const result = await waitForCallCompletion(call.sid, config.callTimeout);
+    
+    return {
+      recipient,
+      status: result.status,
+      duration: result.duration,
+      recording: result.recordingUrl,
+    };
     
   } catch (error) {
     console.error(`[ParallelDialer] Error calling ${recipient.name}:`, error);
@@ -110,37 +134,90 @@ async function makeCall(
 }
 
 /**
- * Generate TwiML-style script for voice AI
+ * Generate TwiML for voice AI script
  */
-function generateCallScript(script: string, recipient: CallRecipient): string {
+function generateTwiML(script: string, recipient: CallRecipient): string {
   // Personalize script with recipient info
-  return script
+  const personalizedScript = script
     .replace('{name}', recipient.name)
     .replace('{company}', recipient.companyName || 'your company');
+  
+  return `
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+      <Say voice="alice">${personalizedScript}</Say>
+      <Gather input="speech dtmf" timeout="5" numDigits="1" action="/api/twilio/gather-response">
+        <Say voice="alice">Press 1 if you're interested, or 2 to be removed from our list.</Say>
+      </Gather>
+      <Say voice="alice">Thank you for your time. Have a great day!</Say>
+    </Response>
+  `.trim();
 }
 
 /**
- * Simulate a call (for testing without voice provider)
+ * Wait for call to complete
+ */
+async function waitForCallCompletion(
+  callSid: string,
+  timeout: number
+): Promise<{ status: CallResult['status']; duration?: number; recordingUrl?: string }> {
+  const twilio = require('twilio');
+  const client = twilio(ENV.twilioAccountSid, ENV.twilioAuthToken);
+  
+  const startTime = Date.now();
+  const maxWait = timeout * 1000 + 10000; // Add 10 seconds buffer
+  
+  while (Date.now() - startTime < maxWait) {
+    const call = await client.calls(callSid).fetch();
+    
+    if (call.status === 'completed' || call.status === 'failed' || call.status === 'busy' || call.status === 'no-answer') {
+      // Determine status
+      let status: CallResult['status'] = 'failed';
+      if (call.status === 'completed') {
+        // Check if it was answered or went to voicemail
+        status = call.answeredBy === 'machine_start' ? 'voicemail' : 'answered';
+      } else if (call.status === 'no-answer') {
+        status = 'no-answer';
+      } else if (call.status === 'busy') {
+        status = 'busy';
+      }
+      
+      // Get recording if available
+      let recordingUrl: string | undefined;
+      try {
+        const recordings = await client.recordings.list({ callSid, limit: 1 });
+        if (recordings.length > 0) {
+          recordingUrl = `https://api.twilio.com${recordings[0].uri.replace('.json', '.mp3')}`;
+        }
+      } catch (error) {
+        console.error(`[ParallelDialer] Error fetching recording:`, error);
+      }
+      
+      return {
+        status,
+        duration: call.duration ? parseInt(call.duration) : undefined,
+        recordingUrl,
+      };
+    }
+    
+    // Wait before checking again
+    await delay(2000);
+  }
+  
+  // Timeout
+  return { status: 'no-answer' };
+}
+
+/**
+ * Simulate a call (for testing without Twilio)
  */
 async function simulateCall(recipient: CallRecipient): Promise<CallResult> {
   // Simulate call duration
   await delay(Math.random() * 3000 + 2000);
   
-  // Random outcome with realistic distribution
-  const rand = Math.random();
-  let status: CallResult['status'];
-  
-  if (rand < 0.35) {
-    status = 'answered';
-  } else if (rand < 0.55) {
-    status = 'voicemail';
-  } else if (rand < 0.80) {
-    status = 'no-answer';
-  } else if (rand < 0.90) {
-    status = 'busy';
-  } else {
-    status = 'failed';
-  }
+  // Random outcome
+  const outcomes: CallResult['status'][] = ['answered', 'voicemail', 'no-answer', 'busy'];
+  const status = outcomes[Math.floor(Math.random() * outcomes.length)];
   
   return {
     recipient,

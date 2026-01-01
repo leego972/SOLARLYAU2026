@@ -1,5 +1,5 @@
 import { desc, eq, sql } from "drizzle-orm";
-import { getDb } from "./db";
+import { getDb } from './db';
 import { InsertLeadClosure, leadClosures, leads, transactions, installers } from "../drizzle/schema";
 
 /**

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
-import { getDb } from "./db";
+import { getDb } from './db';
 import { videoTestimonials } from "../drizzle/schema";
 import { storagePut } from "./storage";
 

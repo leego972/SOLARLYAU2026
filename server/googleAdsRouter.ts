@@ -13,8 +13,6 @@ import { createSolarCampaign, getCurrentMonthBudget } from './adCampaignManager'
 import { enableCampaign, pauseCampaign } from './googleAdsCampaigns';
 import { isGoogleAdsConfigured } from './googleAds';
 import { createConversionAction } from './createConversionAction';
-import { fetchClientAccounts } from './googleAdsClientAccounts';
-import { systemConfig } from '../drizzle/schema';
 
 export const googleAdsRouter = router({
   /**
@@ -396,106 +394,4 @@ export const googleAdsRouter = router({
       period: '30 days',
     };
   }),
-
-  /**
-   * Get client accounts under manager account
-   */
-  getClientAccounts: protectedProcedure.query(async ({ ctx }) => {
-    // Only admin can view client accounts
-    if (ctx.user.role !== 'admin') {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'Only admin can view client accounts',
-      });
-    }
-
-    if (!isGoogleAdsConfigured()) {
-      throw new TRPCError({
-        code: 'PRECONDITION_FAILED',
-        message: 'Google Ads not configured',
-      });
-    }
-
-    const result = await fetchClientAccounts();
-
-    if (!result.success) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: result.error || 'Failed to fetch client accounts',
-      });
-    }
-
-    return { accounts: result.accounts || [] };
-  }),
-
-  /**
-   * Get selected client account ID
-   */
-  getSelectedClientAccount: protectedProcedure.query(async () => {
-    const db = await getDb();
-    if (!db) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Database not available',
-      });
-    }
-
-    const config = await db
-      .select()
-      .from(systemConfig)
-      .where(eq(systemConfig.key, 'google_ads_client_account_id'))
-      .limit(1);
-
-    return { clientAccountId: config[0]?.value || null };
-  }),
-
-  /**
-   * Set selected client account ID
-   */
-  setClientAccount: protectedProcedure
-    .input(z.object({ clientAccountId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
-      // Only admin can set client account
-      if (ctx.user.role !== 'admin') {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'Only admin can set client account',
-        });
-      }
-
-      const db = await getDb();
-      if (!db) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Database not available',
-        });
-      }
-
-      // Check if config exists
-      const existing = await db
-        .select()
-        .from(systemConfig)
-        .where(eq(systemConfig.key, 'google_ads_client_account_id'))
-        .limit(1);
-
-      if (existing[0]) {
-        // Update existing
-        await db
-          .update(systemConfig)
-          .set({
-            value: input.clientAccountId,
-            updatedAt: new Date(),
-          })
-          .where(eq(systemConfig.key, 'google_ads_client_account_id'));
-      } else {
-        // Insert new
-        await db.insert(systemConfig).values({
-          key: 'google_ads_client_account_id',
-          value: input.clientAccountId,
-          description: 'Selected Google Ads client account ID for campaign creation',
-        });
-      }
-
-      return { success: true };
-    }),
 });

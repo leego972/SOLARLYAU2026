@@ -3,7 +3,7 @@
  * Handles actual Google Ads API calls to create and manage campaigns
  */
 
-import { getGoogleAdsCustomer, getGoogleAdsCustomerForClient } from './googleAds';
+import { getGoogleAdsCustomer } from './googleAds';
 import { resources, enums } from 'google-ads-api';
 
 export interface CampaignConfig {
@@ -16,7 +16,6 @@ export interface CampaignConfig {
     descriptions: string[];
   };
   finalUrl: string; // Landing page URL
-  clientAccountId?: string; // Optional client account ID for manager accounts
 }
 
 /**
@@ -29,18 +28,10 @@ export async function createGoogleAdsCampaign(config: CampaignConfig): Promise<{
   error?: string;
 }> {
   try {
-    // Use client account if specified (for manager accounts), otherwise use default
-    const customer = config.clientAccountId 
-      ? getGoogleAdsCustomerForClient(config.clientAccountId)
-      : getGoogleAdsCustomer();
-    
+    const customer = getGoogleAdsCustomer();
     if (!customer) {
-      return { success: false, error: config.clientAccountId 
-        ? `Failed to initialize client account ${config.clientAccountId}` 
-        : 'Google Ads customer not initialized' };
+      return { success: false, error: 'Google Ads customer not initialized' };
     }
-    
-    console.log(`[GoogleAdsCampaigns] Using ${config.clientAccountId ? 'client account ' + config.clientAccountId : 'default account'}`);
 
     console.log(`[GoogleAdsCampaigns] Creating campaign: ${config.name}`);
 
@@ -83,10 +74,6 @@ export async function createGoogleAdsCampaign(config: CampaignConfig): Promise<{
     };
   } catch (error: any) {
     console.error('[GoogleAdsCampaigns] Error creating campaign:', error.message);
-    console.error('[GoogleAdsCampaigns] Error stack:', error.stack);
-    if (error.errors) {
-      console.error('[GoogleAdsCampaigns] API errors:', JSON.stringify(error.errors, null, 2));
-    }
     return { success: false, error: error.message };
   }
 }
@@ -111,18 +98,12 @@ async function createCampaignBudget(
     };
 
     const result = await customer.mutateResources([budgetOperation]);
-    // Handle both old and new API response formats
-    const budgetResourceName = result?.mutate_operation_responses?.[0]?.campaign_budget_result?.resource_name 
-      || result[0]?.campaign_budget?.resource_name;
+    const budgetResourceName = result[0]?.campaign_budget?.resource_name;
 
     console.log(`[GoogleAdsCampaigns] Budget created: ${budgetResourceName}`);
     return budgetResourceName || null;
   } catch (error: any) {
     console.error('[GoogleAdsCampaigns] Error creating budget:', error.message);
-    console.error('[GoogleAdsCampaigns] Error details:', JSON.stringify(error, null, 2));
-    if (error.errors) {
-      console.error('[GoogleAdsCampaigns] API errors:', JSON.stringify(error.errors, null, 2));
-    }
     return null;
   }
 }
@@ -151,19 +132,15 @@ async function createCampaign(
           target_content_network: false,
           target_partner_search_network: false,
         },
-        // Use Manual CPC bidding - can switch to TARGET_CPA after conversion tracking is set up
-        manual_cpc: {
-          enhanced_cpc_enabled: false,
+        bidding_strategy_type: enums.BiddingStrategyType.TARGET_CPA,
+        target_cpa: {
+          target_cpa_micros: 40_000_000, // $40 target CPA
         },
-        // Required field for EU compliance
-        contains_eu_political_advertising: enums.EuPoliticalAdvertisingStatus.DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING,
-      } as unknown as resources.ICampaign,
+      } as resources.ICampaign,
     };
 
     const result = await customer.mutateResources([campaignOperation]);
-    // Handle both old and new API response formats
-    const campaignResourceName = result?.mutate_operation_responses?.[0]?.campaign_result?.resource_name
-      || result[0]?.campaign?.resource_name;
+    const campaignResourceName = result[0]?.campaign?.resource_name;
 
     // Add location targeting
     if (campaignResourceName && locations.length > 0) {
@@ -174,10 +151,6 @@ async function createCampaign(
     return campaignResourceName || null;
   } catch (error: any) {
     console.error('[GoogleAdsCampaigns] Error creating campaign:', error.message);
-    console.error('[GoogleAdsCampaigns] Campaign error details:', JSON.stringify(error, null, 2));
-    if (error.errors) {
-      console.error('[GoogleAdsCampaigns] Campaign API errors:', JSON.stringify(error.errors, null, 2));
-    }
     return null;
   }
 }
@@ -230,9 +203,7 @@ async function createAdGroup(
     };
 
     const result = await customer.mutateResources([adGroupOperation]);
-    // Handle both old and new API response formats
-    const adGroupResourceName = result?.mutate_operation_responses?.[0]?.ad_group_result?.resource_name
-      || result[0]?.ad_group?.resource_name;
+    const adGroupResourceName = result[0]?.ad_group?.resource_name;
 
     console.log(`[GoogleAdsCampaigns] Ad group created: ${adGroupResourceName}`);
     return adGroupResourceName || null;
