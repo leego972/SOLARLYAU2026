@@ -5,7 +5,7 @@ import { nanoid } from "nanoid";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
-import viteConfig from "../../vite.config";
+import viteConfig from "../../vite.config.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url ));
 
