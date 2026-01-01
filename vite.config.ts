@@ -29,7 +29,6 @@ export default defineConfig({
         "@stripe/stripe-js",
         "@stripe/react-stripe-js",
         "stripe",
-        "driver.js",
         "wouter",
         "lucide-react",
         "streamdown",
