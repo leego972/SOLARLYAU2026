@@ -24,6 +24,18 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      external: [
+        "@stripe/stripe-js",
+        "stripe",
+      ],
+      output: {
+        globals: {
+          "@stripe/stripe-js": "Stripe",
+          "stripe": "Stripe",
+        },
+      },
+    },
   },
   server: {
     host: true,
