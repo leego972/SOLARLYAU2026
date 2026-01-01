@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO purchase_activity (installer_name, location, lead_count, created_at) VALUES\n('Solar Solutions Brisbane', 'Brisbane, QLD', 5, DATE_SUB(NOW(), INTERVAL 2 HOUR)),\n('Sunshine Coast Solar', 'Sunshine Coast, QLD', 3, DATE_SUB(NOW(), INTERVAL 5 HOUR)),\n('Sydney Solar Experts', 'Sydney, NSW', 7, DATE_SUB(NOW(), INTERVAL 8 HOUR)),\n('Perth Green Energy', 'Perth, WA', 4, DATE_SUB(NOW(), INTERVAL 12 HOUR)),\n('Adelaide Solar Co', 'Adelaide, SA', 2, DATE_SUB(NOW(), INTERVAL 18 HOUR)),\n('Gold Coast Renewables', 'Gold Coast, QLD', 6, DATE_SUB(NOW(), INTERVAL 24 HOUR)),\n('Melbourne Solar', 'Melbourne, VIC', 8, DATE_SUB(NOW(), INTERVAL 30 HOUR)),\n('Newcastle Energy', 'Newcastle, NSW', 3, DATE_SUB(NOW(), INTERVAL 36 HOUR))",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 22sCsLKPiGMTHLp.2c93ddc59017 --database VWkZBmWbz2ke2ZvPeuVdTw --execute INSERT INTO purchase_activity (installer_name, location, lead_count, created_at) VALUES\n('Solar Solutions Brisbane', 'Brisbane, QLD', 5, DATE_SUB(NOW(), INTERVAL 2 HOUR)),\n('Sunshine Coast Solar', 'Sunshine Coast, QLD', 3, DATE_SUB(NOW(), INTERVAL 5 HOUR)),\n('Sydney Solar Experts', 'Sydney, NSW', 7, DATE_SUB(NOW(), INTERVAL 8 HOUR)),\n('Perth Green Energy', 'Perth, WA', 4, DATE_SUB(NOW(), INTERVAL 12 HOUR)),\n('Adelaide Solar Co', 'Adelaide, SA', 2, DATE_SUB(NOW(), INTERVAL 18 HOUR)),\n('Gold Coast Renewables', 'Gold Coast, QLD', 6, DATE_SUB(NOW(), INTERVAL 24 HOUR)),\n('Melbourne Solar', 'Melbourne, VIC', 8, DATE_SUB(NOW(), INTERVAL 30 HOUR)),\n('Newcastle Energy', 'Newcastle, NSW', 3, DATE_SUB(NOW(), INTERVAL 36 HOUR))",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1518
+}

@@ -1,0 +1,30 @@
+{
+  "query": "SELECT \n  state,\n  COUNT(*) as count,\n  SUM(CASE WHEN isVerified = 1 THEN 1 ELSE 0 END) as verified_count\nFROM installers\nGROUP BY state\nORDER BY count DESC",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 22sCsLKPiGMTHLp.2c93ddc59017 --database VWkZBmWbz2ke2ZvPeuVdTw --execute SELECT \n  state,\n  COUNT(*) as count,\n  SUM(CASE WHEN isVerified = 1 THEN 1 ELSE 0 END) as verified_count\nFROM installers\nGROUP BY state\nORDER BY count DESC",
+  "rows": [
+    {
+      "state": "SA",
+      "count": "40",
+      "verified_count": "3"
+    },
+    {
+      "state": "WA",
+      "count": "28",
+      "verified_count": "0"
+    },
+    {
+      "state": "NSW",
+      "count": "26",
+      "verified_count": "0"
+    },
+    {
+      "state": "QLD",
+      "count": "17",
+      "verified_count": "5"
+    }
+  ],
+  "messages": [],
+  "stdout": "state\tcount\tverified_count\nSA\t40\t3\nWA\t28\t0\nNSW\t26\t0\nQLD\t17\t5\n",
+  "stderr": "",
+  "execution_time_ms": 1509
+}

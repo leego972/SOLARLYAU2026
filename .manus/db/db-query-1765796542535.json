@@ -1,0 +1,124 @@
+{
+  "query": "SELECT id, companyName, state, suburb FROM installers WHERE isActive = TRUE ORDER BY state;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 22sCsLKPiGMTHLp.2c93ddc59017 --database VWkZBmWbz2ke2ZvPeuVdTw --execute SELECT id, companyName, state, suburb FROM installers WHERE isActive = TRUE ORDER BY state;",
+  "rows": [
+    {
+      "id": "3990005",
+      "companyName": "Sydney Solar Experts",
+      "state": "NSW",
+      "suburb": "Sydney"
+    },
+    {
+      "id": "3990006",
+      "companyName": "Newcastle Solar Co",
+      "state": "NSW",
+      "suburb": "Newcastle"
+    },
+    {
+      "id": "3240001",
+      "companyName": "Test Solar Co",
+      "state": "QLD",
+      "suburb": "Brisbane"
+    },
+    {
+      "id": "2970030",
+      "companyName": "ion Team Leader",
+      "state": "QLD",
+      "suburb": "NULL"
+    },
+    {
+      "id": "2970037",
+      "companyName": "or, Permits; Project Management; Student Engineer",
+      "state": "QLD",
+      "suburb": "NULL"
+    },
+    {
+      "id": "2970028",
+      "companyName": "Electrical Construction Group P/L",
+      "state": "QLD",
+      "suburb": "NULL"
+    },
+    {
+      "id": "2970035",
+      "companyName": "e ¦ Detail ¦ Finish ¦",
+      "state": "QLD",
+      "suburb": "NULL"
+    },
+    {
+      "id": "3990004",
+      "companyName": "Sunshine Coast Solar",
+      "state": "QLD",
+      "suburb": "Maroochydore"
+    },
+    {
+      "id": "2970026",
+      "companyName": "Solar and Grid Energy Systems",
+      "state": "QLD",
+      "suburb": "NULL"
+    },
+    {
+      "id": "3240002",
+      "companyName": "Test Solar Co",
+      "state": "QLD",
+      "suburb": "Brisbane"
+    },
+    {
+      "id": "3960012",
+      "companyName": "Energy Bay Service Electrician/Autom",
+      "state": "QLD",
+      "suburb": "NULL"
+    },
+    {
+      "id": "3990001",
+      "companyName": "Test Solar Co",
+      "state": "QLD",
+      "suburb": "Brisbane"
+    },
+    {
+      "id": "3990002",
+      "companyName": "Solar Solutions Brisbane",
+      "state": "QLD",
+      "suburb": "Brisbane"
+    },
+    {
+      "id": "3990003",
+      "companyName": "Gold Coast Solar Pro",
+      "state": "QLD",
+      "suburb": "Surfers Paradise"
+    },
+    {
+      "id": "2970053",
+      "companyName": "ion and maintenance",
+      "state": "SA",
+      "suburb": "NULL"
+    },
+    {
+      "id": "2970051",
+      "companyName": "ion Engineer",
+      "state": "SA",
+      "suburb": "NULL"
+    },
+    {
+      "id": "2970050",
+      "companyName": "ion technician",
+      "state": "SA",
+      "suburb": "NULL"
+    },
+    {
+      "id": "3990008",
+      "companyName": "Adelaide Solar Power",
+      "state": "SA",
+      "suburb": "Adelaide"
+    },
+    {
+      "id": "3990007",
+      "companyName": "Perth Solar Solutions",
+      "state": "WA",
+      "suburb": "Perth"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcompanyName\tstate\tsuburb\n3990005\tSydney Solar Experts\tNSW\tSydney\n3990006\tNewcastle Solar Co\tNSW\tNewcastle\n3240001\tTest Solar Co\tQLD\tBrisbane\n2970030\tion Team Leader\tQLD\tNULL\n2970037\tor, Permits; Project Management; Student Engineer\tQLD\tNULL\n2970028\tElectrical Construction Group P/L\tQLD\tNULL\n2970035\te ¦ Detail ¦ Finish ¦\tQLD\tNULL\n3990004\tSunshine Coast Solar\tQLD\tMaroochydore\n2970026\tSolar and Grid Energy Systems\tQLD\tNULL\n3240002\tTest Solar Co\tQLD\tBrisbane\n3960012\tEnergy Bay Service Electrician/Autom\tQLD\tNULL\n3990001\tTest Solar Co\tQLD\tBrisbane\n3990002\tSolar Solutions Brisbane\tQLD\tBrisbane\n3990003\tGold Coast Solar Pro\tQLD\tSurfers Paradise\n2970053\tion and maintenance\tSA\tNULL\n2970051\tion Engineer\tSA\tNULL\n2970050\tion technician\tSA\tNULL\n3990008\tAdelaide Solar Power\tSA\tAdelaide\n3990007\tPerth Solar Solutions\tWA\tPerth\n",
+  "stderr": "",
+  "execution_time_ms": 1537
+}

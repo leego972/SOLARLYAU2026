@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS installer_credits (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  installerId INT NOT NULL,\n  amount DECIMAL(10,2) DEFAULT 0.00,\n  source ENUM('referral', 'bonus', 'refund', 'promo') NOT NULL,\n  description TEXT,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  expiresAt TIMESTAMP NULL,\n  INDEX idx_installer (installerId)\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 22sCsLKPiGMTHLp.2c93ddc59017 --database VWkZBmWbz2ke2ZvPeuVdTw --execute CREATE TABLE IF NOT EXISTS installer_credits (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  installerId INT NOT NULL,\n  amount DECIMAL(10,2) DEFAULT 0.00,\n  source ENUM('referral', 'bonus', 'refund', 'promo') NOT NULL,\n  description TEXT,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  expiresAt TIMESTAMP NULL,\n  INDEX idx_installer (installerId)\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1701
+}

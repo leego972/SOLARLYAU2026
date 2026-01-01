@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM installers WHERE companyName = 'Test Solar Co' AND contactName = 'John Doe'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 22sCsLKPiGMTHLp.2c93ddc59017 --database VWkZBmWbz2ke2ZvPeuVdTw --execute DELETE FROM installers WHERE companyName = 'Test Solar Co' AND contactName = 'John Doe'",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2102
+}

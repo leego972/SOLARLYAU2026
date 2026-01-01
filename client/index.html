@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <link rel="icon" type="image/png" href="%VITE_APP_LOGO%" />
+    <link rel="apple-touch-icon" href="%VITE_APP_LOGO%" />
+    <title>%VITE_APP_TITLE%</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Australia's first fully autonomous solar lead generation system. Get high-quality solar leads across QLD, NSW, WA, and SA. AI-powered matching with verified installers. Zero manual work required." />
+    <meta name="keywords" content="solar leads australia, solar installation leads, solar panel leads, buy solar leads, solar lead generation, australian solar leads, QLD solar leads, NSW solar leads" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://solarlyau.com/" />
+    <meta property="og:title" content="SolarlyAU - Autonomous Solar Lead Generation for Australian Installers" />
+    <meta property="og:description" content="Get high-quality solar leads automatically. AI generates and matches leads with verified installers across Australia. 24/7 autonomous operation." />
+    <meta property="og:image" content="https://solarlyau.com/og-image.jpg" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://solarlyau.com/" />
+    <meta property="twitter:title" content="SolarlyAU - Autonomous Solar Lead Generation" />
+    <meta property="twitter:description" content="Australia's first fully autonomous solar lead generation system. High-quality leads, verified installers, zero manual work." />
+    <meta property="twitter:image" content="https://solarlyau.com/og-image.jpg" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://solarlyau.com/" />
+    
+    <!-- Robots -->
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    
+    <!-- Google Ads Conversion Tracking -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-1444555296"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-1444555296');
+    </script>
+    
+    <!-- Facebook Pixel Code (Replace YOUR_PIXEL_ID with your actual ID) -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', 'YOUR_PIXEL_ID');
+      fbq('track', 'PageView');
+    </script>
+    <!-- Add Google Fonts here, example:
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    -->
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script
+      defer
+      src="%VITE_ANALYTICS_ENDPOINT%/umami"
+      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+    
+    <!-- V.I.B.A Tracking Script for Solarly AU -->
+    <script>
+    (function() {
+      const VIBA_ENDPOINT = 'https://aibizassist-fbqwkjpg.manus.space/api/webhooks/lead';
+      const DOMAIN = 'solarlyau.com';
+      const WEBSITE_ID = '9KKwzDh2m6WJ2t2YWhCk1u';
+
+      // Track page view
+      function trackPageView() {
+        const data = {
+          type: 'pageview',
+          domain: DOMAIN,
+          websiteId: WEBSITE_ID,
+          page: window.location.pathname,
+          referrer: document.referrer,
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent
+        };
+        navigator.sendBeacon(VIBA_ENDPOINT, JSON.stringify(data));
+      }
+
+      // Track form submissions
+      function trackFormSubmission(formData) {
+        const data = {
+          type: 'lead',
+          domain: DOMAIN,
+          websiteId: WEBSITE_ID,
+          source: 'solarly_form',
+          ...formData,
+          timestamp: new Date().toISOString()
+        };
+        fetch(VIBA_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+
+      // Track solar quote requests specifically
+      function trackQuoteRequest(quoteData) {
+        const data = {
+          type: 'quote_request',
+          domain: DOMAIN,
+          websiteId: WEBSITE_ID,
+          source: 'solarly_quote',
+          ...quoteData,
+          timestamp: new Date().toISOString()
+        };
+        fetch(VIBA_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+
+      // Auto-capture form submissions
+      document.addEventListener('submit', function(e) {
+        const form = e.target;
+        const formData = new FormData(form);
+        const data = {};
+        formData.forEach((value, key) => { data[key] = value; });
+        
+        if (form.id === 'quote-form' || form.classList.contains('quote-form')) {
+          trackQuoteRequest(data);
+        } else {
+          trackFormSubmission(data);
+        }
+      });
+
+      // Track page view on load
+      trackPageView();
+
+      // Expose global functions
+      window.vibaTrack = function(eventType, eventData) {
+        const data = {
+          type: eventType,
+          domain: DOMAIN,
+          websiteId: WEBSITE_ID,
+          ...eventData,
+          timestamp: new Date().toISOString()
+        };
+        fetch(VIBA_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      };
+      window.vibaQuote = trackQuoteRequest;
+    })();
+    </script>
+  </body>
+
+</html>

@@ -1,0 +1,21 @@
+CREATE TABLE `videoTestimonials` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`installerId` int NOT NULL,
+	`installerName` varchar(255) NOT NULL,
+	`companyName` varchar(255) NOT NULL,
+	`videoUrl` varchar(500) NOT NULL,
+	`thumbnailUrl` varchar(500),
+	`duration` int,
+	`title` varchar(255) NOT NULL,
+	`quote` text NOT NULL,
+	`revenueBefore` int,
+	`revenueAfter` int,
+	`closeRateBefore` int,
+	`closeRateAfter` int,
+	`featured` boolean NOT NULL DEFAULT false,
+	`displayOrder` int NOT NULL DEFAULT 0,
+	`isActive` boolean NOT NULL DEFAULT true,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `videoTestimonials_id` PRIMARY KEY(`id`)
+);

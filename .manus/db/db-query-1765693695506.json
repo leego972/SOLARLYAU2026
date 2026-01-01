@@ -1,0 +1,16 @@
+{
+  "query": "SELECT \n  (SELECT COUNT(*) FROM leads) as total_leads,\n  (SELECT COUNT(*) FROM installers) as total_installers,\n  (SELECT COUNT(*) FROM email_tracking) as email_tracks,\n  (SELECT COUNT(*) FROM purchase_activity) as purchase_activities",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 22sCsLKPiGMTHLp.2c93ddc59017 --database VWkZBmWbz2ke2ZvPeuVdTw --execute SELECT \n  (SELECT COUNT(*) FROM leads) as total_leads,\n  (SELECT COUNT(*) FROM installers) as total_installers,\n  (SELECT COUNT(*) FROM email_tracking) as email_tracks,\n  (SELECT COUNT(*) FROM purchase_activity) as purchase_activities",
+  "rows": [
+    {
+      "total_leads": "648",
+      "total_installers": "112",
+      "email_tracks": "0",
+      "purchase_activities": "8"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_leads\ttotal_installers\temail_tracks\tpurchase_activities\n648\t112\t0\t8\n",
+  "stderr": "",
+  "execution_time_ms": 3865
+}

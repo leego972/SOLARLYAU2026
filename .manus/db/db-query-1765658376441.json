@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS referrals (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  referrerId INT NOT NULL,\n  referredId INT NOT NULL,\n  referralCode VARCHAR(50) NOT NULL UNIQUE,\n  status ENUM('pending', 'completed', 'rewarded') DEFAULT 'pending',\n  rewardAmount DECIMAL(10,2) DEFAULT 100.00,\n  rewardCredited BOOLEAN DEFAULT FALSE,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  completedAt TIMESTAMP NULL,\n  rewardedAt TIMESTAMP NULL,\n  INDEX idx_referrer (referrerId),\n  INDEX idx_code (referralCode),\n  INDEX idx_status (status)\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 22sCsLKPiGMTHLp.2c93ddc59017 --database VWkZBmWbz2ke2ZvPeuVdTw --execute CREATE TABLE IF NOT EXISTS referrals (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  referrerId INT NOT NULL,\n  referredId INT NOT NULL,\n  referralCode VARCHAR(50) NOT NULL UNIQUE,\n  status ENUM('pending', 'completed', 'rewarded') DEFAULT 'pending',\n  rewardAmount DECIMAL(10,2) DEFAULT 100.00,\n  rewardCredited BOOLEAN DEFAULT FALSE,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  completedAt TIMESTAMP NULL,\n  rewardedAt TIMESTAMP NULL,\n  INDEX idx_referrer (referrerId),\n  INDEX idx_code (referralCode),\n  INDEX idx_status (status)\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1520
+}

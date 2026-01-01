@@ -1,0 +1,15 @@
+{
+  "query": "SELECT `key`, value, description FROM systemConfig WHERE `key` = 'google_ads_client_account_id';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 22sCsLKPiGMTHLp.2c93ddc59017 --database VWkZBmWbz2ke2ZvPeuVdTw --execute SELECT `key`, value, description FROM systemConfig WHERE `key` = 'google_ads_client_account_id';",
+  "rows": [
+    {
+      "key": "google_ads_client_account_id",
+      "value": "1711137868",
+      "description": "Selected Google Ads client account ID for campaign creation"
+    }
+  ],
+  "messages": [],
+  "stdout": "key\tvalue\tdescription\ngoogle_ads_client_account_id\t1711137868\tSelected Google Ads client account ID for campaign creation\n",
+  "stderr": "",
+  "execution_time_ms": 1516
+}

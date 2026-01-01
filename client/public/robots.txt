@@ -1,0 +1,10 @@
+# Allow all search engines to crawl the site
+User-agent: *
+Allow: /
+
+# Disallow admin and API endpoints
+Disallow: /api/
+Disallow: /dashboard/
+
+# Sitemap location
+Sitemap: https://solarlyau.com/sitemap.xml

@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS email_tracking (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  installer_id INT NOT NULL,\n  email_type VARCHAR(50) NOT NULL,\n  sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  opened_at TIMESTAMP NULL,\n  clicked_at TIMESTAMP NULL,\n  tracking_token VARCHAR(64) UNIQUE NOT NULL,\n  ip_address VARCHAR(45) NULL,\n  user_agent TEXT NULL,\n  INDEX idx_installer (installer_id),\n  INDEX idx_token (tracking_token),\n  INDEX idx_opened (opened_at)\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 22sCsLKPiGMTHLp.2c93ddc59017 --database VWkZBmWbz2ke2ZvPeuVdTw --execute CREATE TABLE IF NOT EXISTS email_tracking (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  installer_id INT NOT NULL,\n  email_type VARCHAR(50) NOT NULL,\n  sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  opened_at TIMESTAMP NULL,\n  clicked_at TIMESTAMP NULL,\n  tracking_token VARCHAR(64) UNIQUE NOT NULL,\n  ip_address VARCHAR(45) NULL,\n  user_agent TEXT NULL,\n  INDEX idx_installer (installer_id),\n  INDEX idx_token (tracking_token),\n  INDEX idx_opened (opened_at)\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2070
+}

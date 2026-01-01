@@ -1,0 +1,15 @@
+{
+  "query": "SELECT \n  COUNT(*) as total_transactions,\n  SUM(amount) as total_revenue,\n  COUNT(DISTINCT installerId) as unique_buyers\nFROM transactions \nWHERE status = 'completed'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 22sCsLKPiGMTHLp.2c93ddc59017 --database VWkZBmWbz2ke2ZvPeuVdTw --execute SELECT \n  COUNT(*) as total_transactions,\n  SUM(amount) as total_revenue,\n  COUNT(DISTINCT installerId) as unique_buyers\nFROM transactions \nWHERE status = 'completed'",
+  "rows": [
+    {
+      "total_transactions": "0",
+      "total_revenue": "NULL",
+      "unique_buyers": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_transactions\ttotal_revenue\tunique_buyers\n0\tNULL\t0\n",
+  "stderr": "",
+  "execution_time_ms": 1530
+}

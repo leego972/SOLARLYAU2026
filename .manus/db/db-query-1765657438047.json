@@ -1,0 +1,16 @@
+{
+  "query": "SELECT \n  COUNT(*) as total_installers,\n  SUM(CASE WHEN isVerified = 1 THEN 1 ELSE 0 END) as verified,\n  SUM(CASE WHEN isActive = 1 THEN 1 ELSE 0 END) as active,\n  COUNT(DISTINCT state) as states_covered\nFROM installers",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 22sCsLKPiGMTHLp.2c93ddc59017 --database VWkZBmWbz2ke2ZvPeuVdTw --execute SELECT \n  COUNT(*) as total_installers,\n  SUM(CASE WHEN isVerified = 1 THEN 1 ELSE 0 END) as verified,\n  SUM(CASE WHEN isActive = 1 THEN 1 ELSE 0 END) as active,\n  COUNT(DISTINCT state) as states_covered\nFROM installers",
+  "rows": [
+    {
+      "total_installers": "111",
+      "verified": "8",
+      "active": "8",
+      "states_covered": "4"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_installers\tverified\tactive\tstates_covered\n111\t8\t8\t4\n",
+  "stderr": "",
+  "execution_time_ms": 1528
+}
